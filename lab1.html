@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+
+<!-- Mirrored from abelay.github.io/6828seminar/lab1.html by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 07 Feb 2021 10:45:07 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="main.css" rel="stylesheet">
+  <script src="../../code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+  <script src="../../cdn.jsdelivr.net/npm/popper.js%401.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+  <script src="../../stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+  <title>6.828: Operating Systems Research Seminar</title>
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-sm navbar-dark bg-dark fixed-top">
+  <div class="navbar-brand">
+    <img src="img/mit_logo.svg" class="d-inline-block align-top" alt="">
+  </div>
+  <a class="navbar-brand" href="#">6.828</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+    <ul class="navbar-nav nav mr-auto">
+      <li class="nav-item">
+        <a class="nav-link" href="index.html">Overview</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="schedule.html">Schedule <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item active">
+        <a class="nav-link" href="lab1.html">Lab 1</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="project.html">Project</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="https://piazza.com/mit/fall2020/6828">Piazza</a>
+      </li>
+    </ul>
+    <span class="navbar-text">
+      <i>Fall, 2020</i>
+    </span>
+  </div>
+</nav>
+
+<div class="container-fluid">
+
+<!-- SCHEDULE SECTION -->
+<div class="col-lg-10 my-3 mx-auto">
+
+<h1>6.828: Lab 1</h1>
+
+<h2>Apply for a Cloudlab Account</h2>
+<p>
+Apply an account using the <a href="https://cloudlab.us/signup.php">signup</a> link. On the “Person Information” panel, click “Join Existing Project” and fill in our project name “MIT6828”. Your application will be approved by us shortly.
+</p>
+
+<h2>Setting up the experiment environment in Cloudlab</h2>
+<p>
+We are going to use <strong>m510</strong> machines equipped with Eight-core Intel Xeon D-1548 2.0 GHz CPU, 64GB ECC Memory, 256 GB NVMe flash storage, and Dual-port Mellanox ConnectX-3 10 Gbps NIC. You can find the detailed hardware description and how the machines are interconnected <a href="http://docs.cloudlab.us/hardware.html">here</a> and current availability <a href="https://www.cloudlab.us/resinfo.php">here</a>. Based on our experience, m510 machines have ample availability most of the time but start the assignment early to avoid missing the deadline due to the availability issue.
+</p>
+
+<ol>
+<li>Make a profile containing two “raw-pc” (bare metal PC) <strong>m510</strong> machines with Ubuntu 18.04 STD (the default image) connected by a link between them, and instantiate an experiment from it. You can use the topology editor, dragging a line between the machines (called nodes in the editor) to create the link. Click on the link and disable "allow interswitch mapping" to force the machines to share the same physical switch.</li>
+</ol>
+
+<p>
+Mellanox ConnectX-3 requires MLX4 poll mode drive library (librte_pmd_mlx4) to poll the packets directly from the NIC with DPDK. See the detailed document <a href="https://doc.dpdk.org/guides/nics/mlx4.html">here</a>. To enable the mlx4 driver, you first need to install the Mellanox OFED (OpenFabrics Enterprise Distribution) on the machines. 
+</p>
+
+<ol start="2">
+<li>Install dependencies.
+<pre class="prettyprint">$ sudo apt-get update
+$ sudo apt-get install libnuma-dev libnl-3-dev libnl-route-3-dev
+</pre></li>
+
+<li>Download the Mellanox OFED for Ubuntu 18.04 x86_64.
+<pre class="prettyprint">$ wget http://content.mellanox.com/ofed/MLNX_OFED-4.6-1.0.1.1/MLNX_OFED_LINUX-4.6-1.0.1.1-ubuntu18.04-x86_64.tgz
+</pre></li>
+
+<li>Install the Mellanox OFED (this will take a full 10 minutes or more).
+<pre class="prettyprint">$ tar -xvzf MLNX_OFED_LINUX-4.6-1.0.1.1-ubuntu18.04-x86_64.tgz
+$ cd MLNX_OFED_LINUX-4.6-1.0.1.1-ubuntu18.04-x86_64
+$ sudo ./mlnxofedinstall --upstream-libs --dpdk
+</pre>
+</li>
+
+<li>Reload the driver.
+<pre class="prettyprint">$ sudo /etc/init.d/openibd restart
+</pre></li>
+
+<li>You can verify whether it is installed correctly.
+<pre class="prettyprint">$ ibv_devinfo
+</pre>
+</li>
+</ol>
+
+<p>
+If it is installed successfully, you can see that two ports are available on the machine with <code>ibv_devinfo</code>. In m510 machine, the first port (port 0 in DPDK) is used for public (inter-cluster) connection, and the second port (port 1 in DPDK) is used for private (intra-cluster) connection. To measure the latency of the two machines, we are going to use ‘port 1’ of the NIC.
+</p>
+
+<p>
+Now that you have OFED installed, you are ready to build the DPDK library.
+</p>
+
+<ol start="7">
+
+<li>Clone the DPDK repository and checkout to the recent release (DPDK 20.08)
+<pre class="prettyprint">$ git clone https://github.com/DPDK/dpdk
+$ cd dpdk
+$ git checkout releases</pre></li>
+
+<li>Because we are building the DPDK with MLX4 PMD driver for Mellanox ConnectX-3 NIC, set ‘<code>CONFIG_RTE_LIBRTE_MLX4_PMD=y</code>’ in line 366 of <code>config/common_base</code>
+<pre class="prettyprint">$ vim config/common_base (Modify line 366)
+</pre></li>
+
+<li>Build the DPDK
+<pre class="prettyprint">$ make config T=x86_64-native-linuxapp-gcc
+$ make -j16
+</pre></li>
+
+<li>Finally, we need to configure huge pages where packets are stored in DPDK.
+<pre class="prettyprint">$ echo 1024 | sudo tee /sys/devices/system/node/node0/hugepages/hugepages-2048kB/nr_hugepages
+</pre>
+</li>
+</ol>
+
+<p>
+Congratulations! Now your DPDK library is ready to use. Before going on, you are encouraged to compile and play with DPDK’s sample applications on <code>examples</code> folder of DPDK. Their documentation is <a href="https://doc.dpdk.org/guides/sample_app_ug/index.html">here</a>. When you compile the code, don’t forget to link <code>dpdk/build/lib</code> and include <code>dpdk/build/include</code>.
+</p>
+<p>
+<strong>Warning:</strong> Your DPDK configuration (and any code you develop on the Cloudlab machines) will be deleted when the experiment ends (~16 hours by default). Consider storing a copy of your code on Github (using a private repo) or on a personal machine. CloudLab can also make a disk image of your machine (a type of snapshot) to save your progress in installing the packages described above. Note that your home directory will not be saved in disk images, but you can place data to be included in the image in <code>/opt</code>.
+</p>
+
+<h2>DPDK ICMP Ping Server</h2>
+<p>
+In this assignment, you will build a server that can respond to ICMP echos using DPDK. Since DPDK directly works with Ethernet frames, you will have to manually parse and modify IP and ICMP headers from echo requests. DPDK uses <code>struct rte_mbuf</code> data structure to store packet buffers. The programming guide explains this data structure <a href="https://doc.dpdk.org/guides/prog_guide/mbuf_lib.html">here</a>.
+</p>
+<p>
+If you feel it is hard to start, use the simple L2 forwarding example (<code>examples/skeleton</code>) we discussed in the tutorial as a starting point. You will need to change the port initialization code since you will only use port1 in this experiment (remember port0 is needed for Linux and ssh). You have to modify <code>lcore_main()</code> to incorporate your packet parsing and crafting logic into its run-to-completion loop. You might find the following macros and functions useful for your purpose. You can find them in DPDK’s <a href="https://doc.dpdk.org/api/">API documentation</a>.
+</p>
+
+<ul>
+<li><code>rte_pktmbuf_alloc</code></li>
+<li><code>rte_pktmbuf_mtod</code></li>
+<li><code>rte_cpu_to_be_16</code></li>
+<li><code>rte_be_to_cpu_16</code></li>
+<li><code>rte_cpu_to_be_32</code></li>
+<li><code>rte_be_to_cpu_32</code></li>
+<li><code>RTE_IPV4</code></li>
+<li><code>rte_is_same_ether_addr</code></li>
+<li><code>rte_ether_addr_copy</code></li>
+<li><code>rte_eth_rx_burst</code></li>
+<li><code>rte_eth_tx_burst</code></li>
+</ul>
+
+<p>
+<strong>Hint:</strong> It may be easier to modify each received packet buffer in place before sending it, rather than creating a new packet buffer.
+</p>
+<p>
+<strong>Hint:</strong> IP and ICMP checksums must be updated if you modify the packet. DPDK provides several <a href="https://doc.dpdk.org/api/rte__ip_8h.html">functions</a> to help calculate checksums.
+</p>
+<p>
+<strong>Hint:</strong> See <a href="https://tools.ietf.org/html/rfc792">RFC 792</a>, ICMP echo, for more details about how ping works.
+</p>
+<p>
+<strong>Hint:</strong> Make sure your Ethernet header contains the right MAC addresses.
+</p>
+<p>
+For simplicity, we recommend building an echo server in DPDK, and then using the standard Linux network stack on the other machine to send ICMP echo packets to it (acting as a client), rather than building a separate client in DPDK. You can generate ping packets on the client machine as follows:
+</p>
+<ol>
+<li>Setup network on client machine:
+<pre class="prettyprint">$ sudo ifconfig eno1d1 192.168.1.2 netmask 255.255.255.0</pre>
+</li>
+<li>Create a static ARP entry for the server:        
+<pre class="prettyprint">$ sudo arp -s 192.168.1.3 [your server's eno1d1 MAC address]</pre>
+</li>
+<li>Generate a flood of ping requests:
+<pre class="prettyprint">$ sudo ping -f 192.168.1.3</pre>
+</li>
+</ol>
+
+<p>
+If successful, your echo server will respond to each ping, and you’ll see ping statistics and no packet loss. You may find that <code>tcpdump</code> is a useful tool for debugging whether the client is receiving your server’s responses.
+</p>
+<h2>Performance Measurement</h2>
+
+<p>
+Now that you have a working server that can respond to ICMP ping requests, you are asked to measure the full time your software and DPDK use to process these requests. You have to figure out the correct code position to add timing API calls.
+</p>
+<p>
+<strong>Hint:</strong> You might have to instrument part of the DPDK mlx4 driver.
+</p>
+<p>
+For an accurate time measurement, you can read the CPU's time stamp counter (TSC) for the elapsed cycles and calculate the elapsed time as cycles/freq. Below shows a sample code of accomplishing that in DPDK.
+</p>
+
+<pre class="prettyprint">uint64_t hz = rte_get_timer_hz(); 
+uint64_t begin = rte_rdtsc_precise(); 
+// Do something
+uint64_t elapsed_cycles = rte_rdtsc_precise() - begin; 
+uint64_t microseconds= elapsed_cycles * 1000000 / hz;
+</pre>
+
+<p>
+If you want to learn more, <a href="https://www.intel.com/content/dam/www/public/us/en/documents/white-papers/ia-32-ia-64-benchmark-code-execution-paper.pdf">this Intel white paper</a> is a good reference. You’re free to use other methods to measure or infer your system’s performance, but make sure to describe your approach.
+</p>
+<h2>Hand-in Instructions</h2>
+
+<ol>
+  <li>Launch an experiment with two m510 machines on Cloudlab. Run your DPDK-based ICMP ping echo program on the server.
+
+  <li>Run Linux’s ping command on the client and send us its output.
+
+  <li>For a round trip of echo, measure the time spent in your software and DPDK versus the time spent in the rest of the network and the Linux client. How could you measure or infer the latency of the raw networking hardware?
+
+  <li>What is the overhead introduced by your DPDK software stack? Do you think your implementation is optimal?
+
+  <li>Submit your source code (excluding DPDK library) and answers (of Q2, Q3, and Q4) to <a href="mailto:6828seminar-staff@lists.csail.mit.edu">6828seminar-staff@lists.csail.mit.edu</a>. You can submit multiple times before the deadline; the latest one will be used for grading.
+  </li>
+</ol>
+<p>
+<strong>Optional Challenge:</strong> Try building and using the latest <a href="https://github.com/joshuafried/caladan-ae">version</a> of Shenango to send a ping to your DPDK server. See <code>tests/test_ping.c</code>. How does its latency compare to Linux?
+
+<p> ** Configurations required to build Shenango on m510 in Cloudlab
+<ul>
+  <li>Install dependency packages
+    <pre class="prettyprint"> $ sudo apt-get install libnuma-dev libaio1 libaio-dev uuid-dev libcunit1 libcunit1-doc libcunit1-dev libmnl-dev</pre></li>
+  <li>
+    Set <code>CONFIG_MLX4=y</code> in <code>build/config</code>.
+  </li>
+  <li>
+    Modify line 233 of <code>iokernel/dpdk.c</code> to <code>dp.port = 1</code>.
+  </li>
+</ul>
+</p>
+</p>
+</div>
+</div>
+
+</body>
+
+<!-- Mirrored from abelay.github.io/6828seminar/lab1.html by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 07 Feb 2021 10:45:07 GMT -->
+</html>
